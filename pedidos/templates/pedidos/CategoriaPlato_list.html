@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titulo %}Categorías — Restaurante Bien Pro{% endblock %}
+
+{% block content %}
+<h1>Categorías</h1>
+<a href="{% url 'pedidos:CategoriaPlato_create' %}">+ Nueva categoría</a>
+
+<table>
+    <thead>
+        <tr><th>Nombre</th><th>Platos</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for categoria in categorias %}
+        <tr>
+            <td><a href="{% url 'pedidos:CategoriaPlato_detail' categoria.pk %}">{{ categoria.nombre }}</a></td>
+            <td>{{ categoria.platos.count }}</td>
+            <td>
+                <a href="{% url 'pedidos:CategoriaPlato_update' categoria.pk %}">Editar</a>
+                <a href="{% url 'pedidos:CategoriaPlato_delete' categoria.pk %}">Borrar</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">No hay categorías todavía.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include "pedidos/_paginacion.html" %}
+{% endblock %}

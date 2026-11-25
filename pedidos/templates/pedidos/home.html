@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inicio — Restaurante Bien Pro{% endblock %}
+
+{% block content %}
+<h1>Restaurante Bien Pro</h1>
+<p>Panel de administración del menú.</p>
+
+<h2>Categorías de Platos: {{ total_CategoriasPlato }}</h2>
+<ul>
+    <li><a href="{% url 'pedidos:CategoriaPlato_list' %}">Administrar categorías</a></li>
+    <li><a href="{% url 'pedidos:CategoriaPlato_create' %}">+ Nueva categoría</a></li>
+</ul>
+
+<h2>Platos: {{ total_Plato }} ({{ disponibles }} disponibles)</h2>
+<ul>
+    <li><a href="{% url 'pedidos:Plato_list' %}">Administrar platos</a></li>
+    <li><a href="{% url 'pedidos:Plato_create' %}">+ Nuevo plato</a></li>
+</ul>
+
+<h2>Últimos Platos Agregados</h2>
+<ul>
+    {% for plato in ultimos_platos %}
+        <li>
+            <a href="{% url 'pedidos:Plato_detail' plato.pk %}">{{ plato.nombre }}</a>
+            — {{ plato.categoria.nombre }} — ${{ plato.precio }}
+        </li>
+    {% empty %}
+        <li>Todavía no hay platos en el menú.</li>
+    {% endfor %}
+</ul>
+
+<h2>Menú por Categorias de Platos</h2>
+{% for categoria in categorias %}
+    <h3><a href="{% url 'pedidos:CategoriaPlato_detail' categoria.pk %}">{{ categoria.nombre }}</a></h3>
+    <ul>
+        {% for plato in categoria.platos.all %}
+            <li>{{ plato.nombre }} — ${{ plato.precio }}</li>
+        {% empty %}
+            <li>Sin platos en esta categoría.</li>
+        {% endfor %}
+    </ul>
+{% empty %}
+    <p>Todavía no hay categorías de platos. <a href="{% url 'pedidos:CategoriaPlato_create' %}">Crea la primera</a>.</p>
+{% endfor %}
+{% endblock %}

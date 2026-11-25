@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ categoria.nombre }} — Restaurante Bien Pro{% endblock %}
+
+{% block content %}
+<h1>{{ categoria.nombre }}</h1>
+<p>{{ categoria.descripcion|default:"Sin descripción." }}</p>
+
+<h2>Platos de esta categoría</h2>
+<ul>
+    {% for plato in categoria.platos.all %}
+        <li>
+            <a href="{% url 'pedidos:Plato_detail' plato.pk %}">{{ plato.nombre }}</a>
+            — {{ plato.get_tamano_display }} — ${{ plato.precio }}
+            {% if not plato.disponible %}<em>(no disponible)</em>{% endif %}
+        </li>
+    {% empty %}
+        <li>Esta categoría todavía no tiene platos.</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'pedidos:CategoriaPlato_update' categoria.pk %}">Editar</a>
+<a href="{% url 'pedidos:CategoriaPlato_delete' categoria.pk %}">Borrar</a>
+<a href="{% url 'pedidos:CategoriaPlato_list' %}">← Volver a categorías</a>
+{% endblock %}

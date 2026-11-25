@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Restaurante Bien Pro{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <strong>🍕 Restaurante Bien Pro</strong>
+        <a href="{% url 'pedidos:home' %}">Inicio</a>
+        <a href="{% url 'pedidos:CategoriaPlato_list' %}">Categorías de Platos</a>
+        <a href="{% url 'pedidos:Plato_list' %}">Platos</a>
+    </nav>
+
+    {% if messages %}
+    <ul>
+        {% for mensaje in messages %}<li>{{ mensaje }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
