@@ -6,7 +6,7 @@
 <h1>{{ plato.nombre }}</h1>
 <p><strong>Categoría:</strong>
    <a href="{% url 'pedidos:CategoriaPlato_detail' plato.categoria.pk %}">{{ plato.categoria.nombre }}</a></p>
-<p><strong>Tamaño:</strong> {{ plato.get_tamano_display }}</p>
+<p><strong>Tipo de servicio:</strong> {{ plato.get_tipo_servicio_display }}</p>
 <p><strong>Precio:</strong> ${{ plato.precio }}</p>
 <p><strong>Disponible:</strong> {% if plato.disponible %}Sí{% else %}No{% endif %}</p>
 <p>{{ plato.descripcion|default:"Sin descripción." }}</p>

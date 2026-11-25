@@ -11,7 +11,7 @@
     {% for plato in categoria.platos.all %}
         <li>
             <a href="{% url 'pedidos:Plato_detail' plato.pk %}">{{ plato.nombre }}</a>
-            — {{ plato.get_tamano_display }} — ${{ plato.precio }}
+            — {{ plato.get_tipo_servicio_display }} — ${{ plato.precio }}
             {% if not plato.disponible %}<em>(no disponible)</em>{% endif %}
         </li>
     {% empty %}

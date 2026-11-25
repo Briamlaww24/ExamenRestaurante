@@ -1,6 +1,7 @@
 # pedidos/views.py
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Count, Prefetch, ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 
 from pedidos.forms import CategoriaPlatoForm, PlatoForm
@@ -9,12 +10,17 @@ from pedidos.models import CategoriaPlato, Plato
 
 def home(request):
     """Portada: resume los dos CRUD y enlaza a cada uno."""
+    platos_disponibles = Plato.objects.filter(disponible=True)
     contexto = {
-        "Total_Categorias": CategoriaPlato.objects.count(),
-        "Total_Platos": Plato.objects.count(),
-        "Disponibles": Plato.objects.filter(disponible=True).count(),
-        "Ultimos_Platos": Plato.objects.select_related("CategoriaPlato").order_by("-registrado_en")[:5],
-        "CategoriaPlatos": CategoriaPlato.objects.all(),
+        "total_categorias": CategoriaPlato.objects.count(),
+        "total_platos": Plato.objects.count(),
+        "disponibles": platos_disponibles.count(),
+        "ultimos_platos": platos_disponibles.select_related("categoria").order_by(
+            "-registrado_en", "-pk"
+        )[:5],
+        "categorias": CategoriaPlato.objects.prefetch_related(
+            Prefetch("platos", queryset=platos_disponibles, to_attr="platos_disponibles")
+        ),
     }
     return render(request, "pedidos/home.html", contexto)
 
@@ -22,27 +28,27 @@ def home(request):
 # --- CRUD de CategoriaPlato ---------------------------------------------------
 
 def CategoriaPlato_list(request):
-    CategoriaPlatos = CategoriaPlato.objects.all()
-    page_obj = Paginator(CategoriaPlatos, 10).get_page(request.GET.get("page"))
+    categorias = CategoriaPlato.objects.annotate(total_platos=Count("platos")).order_by("nombre")
+    page_obj = Paginator(categorias, 10).get_page(request.GET.get("page"))
     return render(request, "pedidos/CategoriaPlato_list.html", {
-        "CategoriaPlatos": page_obj,
+        "categorias": page_obj,
         "page_obj": page_obj,
         "is_paginated": page_obj.has_other_pages(),
     })
 
 
 def CategoriaPlato_detail(request, pk):
-    CategoriaPlato = get_object_or_404(CategoriaPlato, pk=pk)
-    return render(request, "pedidos/CategoriaPlato_detail.html", {"CategoriaPlato": CategoriaPlato})
+    categoria = get_object_or_404(CategoriaPlato, pk=pk)
+    return render(request, "pedidos/CategoriaPlato_detail.html", {"categoria": categoria})
 
 
 def CategoriaPlato_create(request):
     if request.method == "POST":
         form = CategoriaPlatoForm(request.POST)
         if form.is_valid():
-            CategoriaPlato = form.save()
+            categoria = form.save()
             messages.success(request, "Categoría creada exitosamente.")
-            return redirect(CategoriaPlato)
+            return redirect(categoria)
     else:
         form = CategoriaPlatoForm()
     return render(request, "pedidos/form.html", {
@@ -53,15 +59,15 @@ def CategoriaPlato_create(request):
 
 
 def CategoriaPlato_update(request, pk):
-    CategoriaPlato = get_object_or_404(CategoriaPlato, pk=pk)
+    categoria = get_object_or_404(CategoriaPlato, pk=pk)
     if request.method == "POST":
-        form = CategoriaPlatoForm(request.POST, instance=CategoriaPlato)
+        form = CategoriaPlatoForm(request.POST, instance=categoria)
         if form.is_valid():
             form.save()
             messages.success(request, "Categoría actualizada exitosamente.")
-            return redirect(CategoriaPlato)
+            return redirect(categoria)
     else:
-        form = CategoriaPlatoForm(instance=CategoriaPlato)
+        form = CategoriaPlatoForm(instance=categoria)
     return render(request, "pedidos/form.html", {
         "form": form,
         "titulo": "Editar categoría",
@@ -70,13 +76,17 @@ def CategoriaPlato_update(request, pk):
 
 
 def CategoriaPlato_delete(request, pk):
-    CategoriaPlato = get_object_or_404(CategoriaPlato, pk=pk)
+    categoria = get_object_or_404(CategoriaPlato, pk=pk)
     if request.method == "POST":
-        CategoriaPlato.delete()
+        try:
+            categoria.delete()
+        except ProtectedError:
+            messages.error(request, "No se puede eliminar esta categoría porque tiene platos asociados.")
+            return redirect(categoria)
         messages.success(request, "Categoría eliminada.")
         return redirect("pedidos:CategoriaPlato_list")
     return render(request, "pedidos/confirm_delete.html", {
-        "objeto": CategoriaPlato,
+        "objeto": categoria,
         "titulo": "¿Borrar esta categoría?",
         "volver_url": "pedidos:CategoriaPlato_list",
     })
@@ -85,61 +95,61 @@ def CategoriaPlato_delete(request, pk):
 # --- CRUD de Plato -------------------------------------------------------
 
 def Plato_list(request):
-    Platos = Plato.objects.select_related("CategoriaPlato")
-    page_obj = Paginator(Platos, 10).get_page(request.GET.get("page"))
+    platos = Plato.objects.select_related("categoria")
+    page_obj = Paginator(platos, 10).get_page(request.GET.get("page"))
     return render(request, "pedidos/Plato_list.html", {
-        "Platos": page_obj,
+        "platos": page_obj,
         "page_obj": page_obj,
         "is_paginated": page_obj.has_other_pages(),
     })
 
 
 def Plato_detail(request, pk):
-    Plato = get_object_or_404(Plato.objects.select_related("CategoriaPlato"), pk=pk)
-    return render(request, "pedidos/Plato_detail.html", {"Plato": Plato})
+    plato = get_object_or_404(Plato.objects.select_related("categoria"), pk=pk)
+    return render(request, "pedidos/Plato_detail.html", {"plato": plato})
 
 
 def Plato_create(request):
     if request.method == "POST":
         form = PlatoForm(request.POST)
         if form.is_valid():
-            Plato = form.save()
-            messages.success(request, "Plato creada exitosamente.")
-            return redirect(Plato)
+            plato = form.save()
+            messages.success(request, "Plato creado exitosamente.")
+            return redirect(plato)
     else:
         form = PlatoForm()
     return render(request, "pedidos/form.html", {
         "form": form,
-        "titulo": "Nueva Plato",
+        "titulo": "Nuevo plato",
         "volver_url": "pedidos:Plato_list",
     })
 
 
 def Plato_update(request, pk):
-    Plato = get_object_or_404(Plato, pk=pk)
+    plato = get_object_or_404(Plato, pk=pk)
     if request.method == "POST":
-        form = PlatoForm(request.POST, instance=Plato)
+        form = PlatoForm(request.POST, instance=plato)
         if form.is_valid():
             form.save()
-            messages.success(request, "Plato actualizada exitosamente.")
-            return redirect(Plato)
+            messages.success(request, "Plato actualizado exitosamente.")
+            return redirect(plato)
     else:
-        form = PlatoForm(instance=Plato)
+        form = PlatoForm(instance=plato)
     return render(request, "pedidos/form.html", {
         "form": form,
-        "titulo": "Editar Plato",
+        "titulo": "Editar plato",
         "volver_url": "pedidos:Plato_list",
     })
 
 
 def Plato_delete(request, pk):
-    Plato = get_object_or_404(Plato, pk=pk)
+    plato = get_object_or_404(Plato, pk=pk)
     if request.method == "POST":
-        Plato.delete()
+        plato.delete()
         messages.success(request, "Plato eliminado.")
         return redirect("pedidos:Plato_list")
     return render(request, "pedidos/confirm_delete.html", {
-        "objeto": Plato,
-        "titulo": "¿Borrar esta Plato?",
+        "objeto": plato,
+        "titulo": "¿Borrar este plato?",
         "volver_url": "pedidos:Plato_list",
     })

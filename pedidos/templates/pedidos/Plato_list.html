@@ -9,7 +9,7 @@
 <table>
     <thead>
         <tr>
-            <th>Nombre</th><th>Categoría</th><th>Tamaño</th>
+            <th>Nombre</th><th>Categoría</th><th>Tipo de servicio</th>
             <th>Precio</th><th>Disponible</th><th></th>
         </tr>
     </thead>
@@ -18,7 +18,7 @@
         <tr>
             <td><a href="{% url 'pedidos:Plato_detail' plato.pk %}">{{ plato.nombre }}</a></td>
             <td><a href="{% url 'pedidos:CategoriaPlato_detail' plato.categoria.pk %}">{{ plato.categoria.nombre }}</a></td>
-            <td>{{ plato.get_tamano_display }}</td>
+            <td>{{ plato.get_tipo_servicio_display }}</td>
             <td>${{ plato.precio }}</td>
             <td>{% if plato.disponible %}Sí{% else %}No{% endif %}</td>
             <td>

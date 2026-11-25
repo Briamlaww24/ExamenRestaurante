@@ -14,7 +14,7 @@
         {% for categoria in categorias %}
         <tr>
             <td><a href="{% url 'pedidos:CategoriaPlato_detail' categoria.pk %}">{{ categoria.nombre }}</a></td>
-            <td>{{ categoria.platos.count }}</td>
+            <td>{{ categoria.total_platos }}</td>
             <td>
                 <a href="{% url 'pedidos:CategoriaPlato_update' categoria.pk %}">Editar</a>
                 <a href="{% url 'pedidos:CategoriaPlato_delete' categoria.pk %}">Borrar</a>

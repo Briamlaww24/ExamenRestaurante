@@ -12,6 +12,6 @@ class CategoriaPlatoAdmin(admin.ModelAdmin):
 
 @admin.register(Plato)
 class PlatoAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "descripcion", "tipoServicio", "precio", "disponible")
-    list_filter = ("categoria", "tipoServicio", "disponible")
+    list_display = ("nombre", "descripcion", "tipo_servicio", "precio", "disponible")
+    list_filter = ("categoria", "tipo_servicio", "disponible")
     search_fields = ("nombre", "descripcion")
