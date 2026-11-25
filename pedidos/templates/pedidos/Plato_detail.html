@@ -1,0 +1,17 @@
+{% extends "pedidos/base.html" %}
+
+{% block titulo %}{{ plato.nombre }} — Restaurante Bien Pro{% endblock %}
+
+{% block content %}
+<h1>{{ plato.nombre }}</h1>
+<p><strong>Categoría:</strong>
+   <a href="{% url 'pedidos:CategoriaPlato_detail' plato.categoria.pk %}">{{ plato.categoria.nombre }}</a></p>
+<p><strong>Tamaño:</strong> {{ plato.get_tamano_display }}</p>
+<p><strong>Precio:</strong> ${{ plato.precio }}</p>
+<p><strong>Disponible:</strong> {% if plato.disponible %}Sí{% else %}No{% endif %}</p>
+<p>{{ plato.descripcion|default:"Sin descripción." }}</p>
+
+<a href="{% url 'pedidos:Plato_update' plato.pk %}">Editar</a>
+<a href="{% url 'pedidos:Plato_delete' plato.pk %}">Borrar</a>
+<a href="{% url 'pedidos:Plato_list' %}">← Volver a platos</a>
+{% endblock %}

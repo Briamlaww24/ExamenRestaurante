@@ -1,0 +1,36 @@
+{% extends "pedidos/base.html" %}
+
+{% block titulo %}Platos — Restaurante Bien Pro{% endblock %}
+
+{% block content %}
+<h1>Platos</h1>
+<a href="{% url 'pedidos:Plato_create' %}">+ Nuevo plato</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th><th>Categoría</th><th>Tamaño</th>
+            <th>Precio</th><th>Disponible</th><th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for plato in platos %}
+        <tr>
+            <td><a href="{% url 'pedidos:Plato_detail' plato.pk %}">{{ plato.nombre }}</a></td>
+            <td><a href="{% url 'pedidos:CategoriaPlato_detail' plato.categoria.pk %}">{{ plato.categoria.nombre }}</a></td>
+            <td>{{ plato.get_tamano_display }}</td>
+            <td>${{ plato.precio }}</td>
+            <td>{% if plato.disponible %}Sí{% else %}No{% endif %}</td>
+            <td>
+                <a href="{% url 'pedidos:Plato_update' plato.pk %}">Editar</a>
+                <a href="{% url 'pedidos:Plato_delete' plato.pk %}">Borrar</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No hay platos todavía.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include "pedidos/_paginacion.html" %}
+{% endblock %}
